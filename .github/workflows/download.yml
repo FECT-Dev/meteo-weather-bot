@@ -18,21 +18,32 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Install dependencies
+      - name: Install Python dependencies
         run: pip install -r requirements.txt
 
-      - name: Download and extract Chrome for Testing
+      - name: Download and extract Chrome & ChromeDriver
         run: |
           wget https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/126.0.6478.126/linux64/chrome-linux64.zip
           wget https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/126.0.6478.126/linux64/chromedriver-linux64.zip
           unzip chrome-linux64.zip
           unzip chromedriver-linux64.zip
+          chmod +x chrome-linux64/chrome chromedriver-linux64/chromedriver
 
-      - name: Run the script
+      - name: Run the download script
         run: python download_weather_pdf.py
 
-      - name: Upload downloaded PDF
-        uses: actions/upload-artifact@v4
-        with:
-          name: weather-report-${{ github.run_id }}
-          path: downloads/
+      - name: Move and rename the PDF
+        run: |
+          TODAY=$(date +%Y-%m-%d)
+          mkdir -p reports/$TODAY
+          mv downloads/$TODAY/*.pdf reports/$TODAY/weather-$TODAY.pdf
+
+      - name: Commit and push to repo
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add reports/
+          git commit -m "Add weather report for $(date +%Y-%m-%d)" || echo "No changes to commit"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
