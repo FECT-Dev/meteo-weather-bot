@@ -1,0 +1,35 @@
+name: Daily Weather PDF Download
+
+on:
+  schedule:
+    - cron: '0 3 * * *'  # Runs every day at 03:00 UTC
+  workflow_dispatch:
+
+jobs:
+  download:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies and ChromeDriver
+        run: |
+          pip install -r requirements.txt
+          sudo apt-get update
+          sudo apt-get install -y chromium-chromedriver
+          sudo ln -s /usr/lib/chromium-browser/chromedriver /usr/bin/chromedriver
+
+      - name: Run the script
+        run: python download_weather_pdf.py
+
+      - name: Upload downloaded PDF
+        uses: actions/upload-artifact@v3
+        with:
+          name: weather-report-${{ github.run_id }}
+          path: downloads/
