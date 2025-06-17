@@ -40,15 +40,11 @@ jobs:
 
       - name: Commit and push to repo using PAT
         env:
-          ACTIONS_PAT: ${{ secrets.ACTIONS_PAT }}
+          TOKEN: ${{ secrets.ACTIONS_PAT }}
         run: |
           git config --global user.name "Auto Commit Bot"
           git config --global user.email "actions@github.com"
-          if git remote | grep origin; then
-            git remote set-url origin https://x-access-token:${ACTIONS_PAT}@github.com/${{ github.repository }}
-          else
-            git remote add origin https://x-access-token:${ACTIONS_PAT}@github.com/${{ github.repository }}
-          fi
+          git remote set-url origin https://x-access-token:${TOKEN}@github.com/${{ github.repository }}
           git fetch origin main
           git checkout main
           git pull origin main
